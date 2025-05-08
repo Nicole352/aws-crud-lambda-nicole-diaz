@@ -1,0 +1,66 @@
+org: nicolediaz
+app: apptasknico
+service: AppTask
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:583686634945:table/tareasTable
+
+functions:
+  hello:
+    handler: src/handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+  crearTarea: # este es el nombre de la función
+    handler: src/agregarTask.agregarTask 
+    # este es el nombre del archivo y la función
+    events:
+      - httpApi:
+          path: /crear # este es el endpoint
+          method: post # este es el método http
+  obtenerTasks:
+    handler: src/obtenerTasks.obtenerTasks
+    events:
+      - httpApi:
+          path: /tareas
+          method: get
+  obtenerTask:
+    handler: src/obtenerTask.obtenerTask
+    events:
+      - httpApi:
+          path: /tarea/{id}
+          method: get
+  eliminarTask:
+    handler: src/eliminarTask.eliminarTask
+    events:
+      - httpApi:
+          path: /eliminar/{id}
+          method: delete
+  editarTask:
+    handler: src/editarTask.editarTask
+    events:
+      - httpApi:
+          path: /editar/{id}
+          method: put
+
+resources: 
+  Resources:
+    tareasTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: tareasTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
